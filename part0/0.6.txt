@@ -1,0 +1,6 @@
+note over browser:
+browser starts executing js-code on submiting the form.
+Redraw notes, adding new note. Sends request to server.
+end note
+browser->server: HTTP POST https://studies.cs.helsinki.fi/exampleapp/new_note_spa
+server-->browser: response: 201 message: "note created"

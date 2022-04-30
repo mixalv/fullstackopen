@@ -1,7 +1,7 @@
 import Country from "./Country"
 
 
-const Countries = ({countries, setSearch}) => {
+const Countries = ({countries, setSearch, search}) => {
 
     const clickHandler = (event) => {
         setSearch(event.target.value)
@@ -14,7 +14,8 @@ const Countries = ({countries, setSearch}) => {
                 </div>
             )  
     } 
-    if (countries.length===1) {
+    if (countries.length !==0 && (countries.length===1 || countries.some( country=> country.name.common.toLowerCase() === search.toLowerCase())) ) {
+        console.log(countries[0].name.common)
         const country = countries[0]
         return(
             <Country country={country} />

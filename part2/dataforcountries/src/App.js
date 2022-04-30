@@ -22,7 +22,7 @@ let countriesToShow = countries.filter(country => country.name.common.toLowerCas
   return (
     <div>
       <SearchForm search={search} setSearch={setSearch}/>
-      <Countries countries={countriesToShow} setSearch={setSearch} />
+      <Countries countries={countriesToShow} setSearch={setSearch} search={search} />
     </div>
   );
 }

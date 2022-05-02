@@ -1,17 +1,18 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Names from './components/Names'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
+import personsService from './services/persons'
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas',
-      number: '7777'
-  }
-  ]) 
+  const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
+
+  useEffect(() => {
+        personsService.getAllPersons().then(persons => setPersons(persons))
+  }, [])
 
   const filterHandler = (event) => {
     setFilter(event.target.value) 
@@ -19,10 +20,8 @@ const App = () => {
 
   const personsToShow = () => {
     if (filter.length === 0) {
-      console.log('nothing'+filter)
       return persons
     } else {
-      console.log('something'+filter)
       return persons.filter(person => person.name.toLowerCase().includes(filter.toLowerCase()))
     }
   }
@@ -39,19 +38,30 @@ const App = () => {
 
   const addName = (event) => {
     event.preventDefault()
+    const newPerson = {name: newName, number: newNumber}
     if (checkSame(newName)) {
-      window.alert(`${newName} is already added to phonebook`)
+      if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one ?`)) {
+        const oldPerson = persons.find(person => person.name === newName)
+        const id = oldPerson.id
+        personsService
+          .updatePerson(newPerson, id)
+          .then(response => {
+            setPersons(persons.map(element => element.id !== id ? element : response))
+          })
+      }
+      // window.alert(`${newName} is already added to phonebook`)
     } else {
-      setPersons(persons.concat({name: newName, number: newNumber}))
+      personsService
+        .createPerson(newPerson)
+        .then(created => setPersons(persons.concat(created)))
+        setNewName('')
+        setNewNumber('')
     }
     
-    setNewName('')
-    setNewNumber('')
   }
 
   const changeName = (event) => {
     const value = event.target.value
-    console.log(value)
     setNewName(value)
     if (checkSame(value)) {
       window.alert(`${value} is already added to phonebook`)
@@ -70,7 +80,7 @@ const App = () => {
       <PersonForm addName={addName} newName={newName} changeName={changeName} 
       newNumber={newNumber} changeNumber={changeNumber} />
       <h2>Numbers</h2>
-      <Names persons={personsToShow()} />
+      <Names persons={personsToShow()} setPersons={setPersons} />
     </div>
   )
 }

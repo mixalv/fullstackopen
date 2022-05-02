@@ -3,12 +3,14 @@ import Names from './components/Names'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import personsService from './services/persons'
+import Notification from './components/Notification'
 
 const App = () => {
   const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
+  const [message, setMessage] = useState(null)
 
   useEffect(() => {
         personsService.getAllPersons().then(persons => setPersons(persons))
@@ -35,6 +37,13 @@ const App = () => {
     }
   }
 
+  const notificate = (text, state) =>  {
+    setMessage({text, state})
+          setTimeout(() => {
+            setMessage(null)
+          }, 5000)
+  }
+
 
   const addName = (event) => {
     event.preventDefault()
@@ -48,14 +57,15 @@ const App = () => {
           .then(response => {
             setPersons(persons.map(element => element.id !== id ? element : response))
           })
+          notificate(`The number for ${newName} is successfully changed`, 'success')
       }
-      // window.alert(`${newName} is already added to phonebook`)
     } else {
       personsService
         .createPerson(newPerson)
         .then(created => setPersons(persons.concat(created)))
         setNewName('')
         setNewNumber('')
+        notificate(`Added ${newName}`, 'success')
     }
     
   }
@@ -73,14 +83,29 @@ const App = () => {
     setNewNumber(event.target.value)
   }
 
+  const deletePerson = (event)  => {
+    if (window.confirm(`Delete ${event.target.name} ?`)) {
+        const id = parseInt(event.target.value)
+    const newPersons = persons.filter(person => person.id !== id)
+    setPersons(newPersons)
+    personsService.deletePerson(id).then( () => {
+        setPersons(newPersons)
+    })
+    .catch(() => {
+        notificate(`Information of ${event.target.name} has been already removed from the server`, 'error')
+        
+    })
+    }}
+
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={message} />
       <Filter filter={filter} filterHandler={filterHandler} />
       <PersonForm addName={addName} newName={newName} changeName={changeName} 
       newNumber={newNumber} changeNumber={changeNumber} />
       <h2>Numbers</h2>
-      <Names persons={personsToShow()} setPersons={setPersons} />
+      <Names persons={personsToShow()} setPersons={setPersons} clickHandler={deletePerson} />
     </div>
   )
 }

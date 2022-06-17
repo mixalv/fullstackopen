@@ -56,16 +56,26 @@ const App = () => {
           .updatePerson(newPerson, id)
           .then(response => {
             setPersons(persons.map(element => element.id !== id ? element : response))
+            notificate(`The number for ${newName} is successfully changed`, 'success')
           })
-          notificate(`The number for ${newName} is successfully changed`, 'success')
+          .catch(error=> {
+            notificate(error.response.data.error, 'error')
+          })
+          
       }
     } else {
       personsService
         .createPerson(newPerson)
-        .then(created => setPersons(persons.concat(created)))
+        .then(created => {
+          setPersons(persons.concat(created))
+          notificate(`Added ${newName}`, 'success')
+        })
+        .catch(error=> {
+          notificate(error.response.data.error, 'error')
+        })
         setNewName('')
         setNewNumber('')
-        notificate(`Added ${newName}`, 'success')
+        
     }
     
   }
@@ -85,7 +95,8 @@ const App = () => {
 
   const deletePerson = (event)  => {
     if (window.confirm(`Delete ${event.target.name} ?`)) {
-        const id = parseInt(event.target.value)
+        const id = event.target.value
+        console.log(id)
     const newPersons = persons.filter(person => person.id !== id)
     setPersons(newPersons)
     personsService.deletePerson(id).then( () => {
